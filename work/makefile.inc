@@ -113,8 +113,6 @@ initnfs: chroot
 	cp -p ${CHROOT_PATH}/lib/riscv64-linux-gnu/libselinux.so.1 ./lib/riscv64-linux-gnu
 	cp -p ${CHROOT_PATH}/lib/riscv64-linux-gnu/libtirpc.so.1 ./lib/riscv64-linux-gnu
 	cp -p ${CHROOT_PATH}/lib/riscv64-linux-gnu/libuuid.so.1 ./lib/riscv64-linux-gnu
-	cp work/busyboxnfs.sh init
-	chmod +x init
 
 initmmc: chroot
 	make clean
@@ -144,15 +142,22 @@ initmmc: chroot
 	cp -p ${CHROOT_PATH}/lib/riscv64-linux-gnu/libext2fs.so.2 ./lib/riscv64-linux-gnu
 	cp -p ${CHROOT_PATH}/lib/riscv64-linux-gnu/libe2p.so.2 ./lib/riscv64-linux-gnu
 	cp -p ${CHROOT_PATH}/lib/riscv64-linux-gnu/libcom_err.so.2 ./lib/riscv64-linux-gnu
-	cp work/busyboxmmc.sh init
-	chmod +x init
 
-cpio: ../riscv-linux/initramfsnfs.cpio ../riscv-linux/initramfsmmc.cpio
+cpio: ../riscv-linux/initramfsnfs.cpio ../riscv-linux/initramfsmmc.cpio ../riscv-linux/initramfsloop.cpio
 
 ../riscv-linux/initramfsnfs.cpio: initnfs
+	cp work/busyboxnfs.sh init
+	chmod +x init
 	echo "mknod dev/null c 1 3; mknod dev/tty c 5 0; mknod dev/zero c 1 5; mknod dev/console c 5 1; mknod dev/random c 1 8; mknod dev/urandom c 1 9; mknod dev/mmcblk0 b 179 0; mknod dev/mmcblk0p1 b 179 1; mknod dev/mmcblk0p2 b 179 2; find . -path ./work -prune -o -path ./.git -prune -o -print | cpio -H newc -o > $@" | fakeroot
 
 ../riscv-linux/initramfsmmc.cpio: initmmc
+	cp work/busyboxmmc.sh init
+	chmod +x init
+	echo "mknod dev/null c 1 3; mknod dev/tty c 5 0; mknod dev/zero c 1 5; mknod dev/console c 5 1; mknod dev/random c 1 8; mknod dev/urandom c 1 9; mknod dev/mmcblk0 b 179 0; mknod dev/mmcblk0p1 b 179 1; mknod dev/mmcblk0p2 b 179 2; find . -path ./work -prune -o -path ./.git -prune -o -print | cpio -H newc -o > $@" | fakeroot
+
+../riscv-linux/initramfsloop.cpio: initmmc
+	cp work/busyboxloop.sh init
+	chmod +x init
 	echo "mknod dev/null c 1 3; mknod dev/tty c 5 0; mknod dev/zero c 1 5; mknod dev/console c 5 1; mknod dev/random c 1 8; mknod dev/urandom c 1 9; mknod dev/mmcblk0 b 179 0; mknod dev/mmcblk0p1 b 179 1; mknod dev/mmcblk0p2 b 179 2; find . -path ./work -prune -o -path ./.git -prune -o -print | cpio -H newc -o > $@" | fakeroot
 
 deps:
